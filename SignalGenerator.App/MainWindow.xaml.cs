@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using SignalProcessing.Core;
 using ScottPlot.Plottables;
 using System;
 using System.Collections.Generic;
@@ -19,24 +20,24 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using static SkiaSharp.HarfBuzz.SKShaper;
 
-namespace SignalParser
+namespace SignalGenerator.App
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
-        private SignalChannelSignal sig;
-        private List<SignalChannelSignal> signalList = new List<SignalChannelSignal>();
-        private List<OutOfRangeEventArgs> markup = new List<OutOfRangeEventArgs>();
-        private List<VerticalLine> markerList = new List<VerticalLine>();
-        private float markupFreq;
+        public SignalChannelSignal sig;
+        public List<SignalChannelSignal> signalList = new List<SignalChannelSignal>();
+        public List<OutOfRangeEventArgs> markup = new List<OutOfRangeEventArgs>();
+        public List<VerticalLine> markerList = new List<VerticalLine>();
+        public float markupFreq;
         public MainWindow()
         {
             InitializeComponent();
             
         }
-        private void addSignal(SignalChannelSignal obj)
+        public void addSignal(SignalChannelSignal obj)
         {
 
             signalList.Add(obj);
@@ -44,7 +45,7 @@ namespace SignalParser
             WpfPlot1.Plot.Axes.AutoScale();
             WpfPlot1.Refresh();
         }
-        private void addMarkers(OutOfRangeEventArgs obj, float freq)
+        public void addMarkers(OutOfRangeEventArgs obj, float freq)
         {
             VerticalLine start = WpfPlot1.Plot.Add.VerticalLine(obj.Start / freq);
             VerticalLine end = WpfPlot1.Plot.Add.VerticalLine(obj.End / freq);
@@ -53,7 +54,7 @@ namespace SignalParser
             markerList.Add(start);
             markerList.Add(end);
         }
-        private void clearMarkers()
+        public void clearMarkers()
         {
             foreach (VerticalLine marker in markerList)
             {
@@ -64,7 +65,7 @@ namespace SignalParser
         }
 
 
-        private void Button_Click_Sin(object sender, RoutedEventArgs e)
+        public void Button_Click_Sin(object sender, RoutedEventArgs e)
         {
             float len = (float.Parse(len_textBox.Text, CultureInfo.InvariantCulture));
             float freq = (float.Parse(freq_textBox.Text, CultureInfo.InvariantCulture));
@@ -76,7 +77,7 @@ namespace SignalParser
             
 
         }
-        private void Button_Click_Line(object sender, RoutedEventArgs e)
+        public void Button_Click_Line(object sender, RoutedEventArgs e)
         {
             float k = (float.Parse(k_textBox.Text, CultureInfo.InvariantCulture));
             float b = (float.Parse(b_textBox.Text, CultureInfo.InvariantCulture));
@@ -86,7 +87,7 @@ namespace SignalParser
 
 
         }
-        private void Button_Clear(object sender, RoutedEventArgs e)
+        public void Button_Clear(object sender, RoutedEventArgs e)
         {
             signalList.Clear();
             markup.Clear();
@@ -94,7 +95,7 @@ namespace SignalParser
             WpfPlot1.Plot.Clear();
             WpfPlot1.Refresh();
         }
-        private void Button_Write(object sender, RoutedEventArgs e)
+        public void Button_Write(object sender, RoutedEventArgs e)
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Filter = "csv-файл (*.csv)|*.csv";
@@ -108,7 +109,7 @@ namespace SignalParser
 
 
         }
-        private void Button_Load(object sender, RoutedEventArgs e)
+        public void Button_Load(object sender, RoutedEventArgs e)
         {
             OpenFileDialog myDialog = new OpenFileDialog();
             myDialog.Filter = "csv-файл(*.csv)|*.csv";
@@ -123,14 +124,14 @@ namespace SignalParser
             
 
         }
-        private void Button_Click_Noise(object sender, RoutedEventArgs e)
+        public void Button_Click_Noise(object sender, RoutedEventArgs e)
         {
             float amplitude = (float.Parse(Amplitude_textBox.Text, CultureInfo.InvariantCulture));
             float len = (float.Parse(len_textBox.Text, CultureInfo.InvariantCulture));
             float freq = (float.Parse(freq_textBox.Text, CultureInfo.InvariantCulture));
             addSignal(Tools.Noise(len, freq, amplitude));
         }
-        private void Button_Click_Remove(object sender, RoutedEventArgs e)
+        public void Button_Click_Remove(object sender, RoutedEventArgs e)
         {
             if (signalList.Count == 0)
             {
@@ -144,7 +145,7 @@ namespace SignalParser
                 WpfPlot1.Refresh();
             }
         }
-        private void Button_Click_Summ(object sender, RoutedEventArgs e)
+        public void Button_Click_Summ(object sender, RoutedEventArgs e)
         {
             SignalChannelSignal sig_summ = Tools.Summ(signalList);
             string text = "Нет сигналов или частоты не совпадают";
@@ -158,7 +159,7 @@ namespace SignalParser
             }
                 
         }
-        private void Button_Click_Concat(object sender, RoutedEventArgs e)
+        public void Button_Click_Concat(object sender, RoutedEventArgs e)
         {
             SignalChannelSignal sig_con = Tools.Concat(signalList);
             string text = "Нет сигналов или частоты не совпадают";
@@ -173,7 +174,7 @@ namespace SignalParser
 
         }
 
-        private void Button_Click_Offline(object sender, RoutedEventArgs e)
+        public void Button_Click_Offline(object sender, RoutedEventArgs e)
         {
             if (signalList.Count == 0)
             {
@@ -191,7 +192,7 @@ namespace SignalParser
             addSignal(newData);
         }
 
-        private void Button_Click_Online(object sender, RoutedEventArgs e)
+        public void Button_Click_Online(object sender, RoutedEventArgs e)
         {
             if (signalList.Count == 0)
             {
@@ -215,7 +216,7 @@ namespace SignalParser
             SignalChannelSignal newData = new SignalChannelSignal(signalList.Last().Freq, result.ToArray());
             addSignal(newData);
         }
-        private void Button_Click_Analyze(object sender, RoutedEventArgs e)
+        public void Button_Click_Analyze(object sender, RoutedEventArgs e)
         {
             if (signalList.Count == 0)
             {
@@ -237,12 +238,12 @@ namespace SignalParser
             analyzer.Analyze(sig.Value);
             WpfPlot1.Refresh();
         }
-        private void Analyzer_OutOfRange(object sender, OutOfRangeEventArgs e)
+        public void Analyzer_OutOfRange(object sender, OutOfRangeEventArgs e)
         {
             markup.Add(e);
             addMarkers(e, markupFreq);
         }
-        private void Button_Write_Markup(object sender, RoutedEventArgs e)
+        public void Button_Write_Markup(object sender, RoutedEventArgs e)
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Filter = "csv-файл (*.csv)|*.csv";
@@ -254,7 +255,7 @@ namespace SignalParser
                 MarkupWriter.Write(markupFreq, markup, filePath);
             }
         }
-        private void Button_Load_Markup(object sender, RoutedEventArgs e)
+        public void Button_Load_Markup(object sender, RoutedEventArgs e)
         {
             OpenFileDialog myDialog = new OpenFileDialog();
             myDialog.Filter = "csv-файл(*.csv)|*.csv";
@@ -272,7 +273,7 @@ namespace SignalParser
                 WpfPlot1.Refresh();
             }
         }
-        private void Button_Click_CutUp(object sender, RoutedEventArgs e)
+        public void Button_Click_CutUp(object sender, RoutedEventArgs e)
         {
             if (signalList.Count == 0)
             {
@@ -292,7 +293,7 @@ namespace SignalParser
 
 
         }
-        private void Button_Click_CutDown(object sender, RoutedEventArgs e)
+        public void Button_Click_CutDown(object sender, RoutedEventArgs e)
         {
             if (signalList.Count == 0)
             {
@@ -308,7 +309,7 @@ namespace SignalParser
             thre.CutDown(downCut);
             addSignal(sig);
         }
-        private void Button_Click_CutUpAndDown(object sender, RoutedEventArgs e)
+        public void Button_Click_CutUpAndDown(object sender, RoutedEventArgs e)
         {
             if (signalList.Count == 0)
             {
