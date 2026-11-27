@@ -324,6 +324,30 @@ namespace SignalGenerator.App
             thre.CutDown(downCut);
             addSignal(sig);
         }
+        public void Button_Click_Resample(object sender, RoutedEventArgs e)
+        {
+            if (signalList.Count == 0)
+            {
+                MessageBox.Show("Нет сигналов для изменения частоты", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
+            try
+            {
+                float newFreq = float.Parse(newFreq_textBox.Text, CultureInfo.InvariantCulture);
+                SingleChannelSignal lastSignal = signalList.Last();
+                SingleChannelSignal resampled = Resampler.Resample(lastSignal, newFreq);
+
+                clearMarkers();
+                WpfPlot1.Plot.Remove(WpfPlot1.Plot.PlottableList.Last());
+                signalList.RemoveAt(signalList.Count - 1);
+
+                addSignal(resampled);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ошибка изменения частоты", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
     }
 }
