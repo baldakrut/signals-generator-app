@@ -35,16 +35,78 @@ namespace SignalGenerator.App
         public MainWindow()
         {
             InitializeComponent();
-
+            _markerRenderer = new SignalMarkerRenderer(WpfPlot1.Plot);
+            _analyzer.MarkerDetected += ShowMarker;
+            _analyzer.MarkerDetected += AppendMarkerRow;
             SignalTypeComboBox.ItemsSource = Enum.GetValues(typeof(SignalType));
             SignalTypeComboBox.SelectedIndex = 0;
+
         }
+        private readonly ThresholdAnalyzer _analyzer = new ThresholdAnalyzer();
+        private SignalMarkerRenderer _markerRenderer;
+        private SignalAnalysisResult _analysisResult;
         public void addSignal(SingleChannelSignal obj)
         {
-
+            ClearAnalysis();
             signalList.Add(obj);
             WpfPlot1.Plot.Add.ScatterLine(obj.TimeTick, obj.Data);
             WpfPlot1.Plot.Axes.AutoScale();
+            WpfPlot1.Refresh();
+        }
+        private void ShowMarker(object sender, MarkerDetectedEventArgs e)
+        {
+            _markerRenderer.AddMarker(e.Time, e.Value, e.Marker.Direction);
+        }
+
+        private void AppendMarkerRow(object sender, MarkerDetectedEventArgs e)
+        {
+            string directionText = e.Marker.Direction == CrossingDirection.Up ? "вверх" : "вниз";
+            MarkerListBox.Items.Add($"{e.Time:F3} с; {e.Value}; {directionText}");
+        }
+
+        private void ClearAnalysis()
+        {
+            _markerRenderer?.ClearMarkers();
+            MarkerListBox?.Items.Clear();
+            if (SummaryTextBlock != null)
+                SummaryTextBlock.Text = string.Empty;
+            _analysisResult = null;
+        }
+
+        private void Button_Click_FindCrossings(object sender, RoutedEventArgs e)
+        {
+            if (signalList.Count == 0)
+            {
+                MessageBox.Show("Нет сигналов для анализа.", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            string text = ThresholdTextBox.Text.Replace(',', '.');
+            if (!float.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out float threshold) ||
+                float.IsNaN(threshold) || float.IsInfinity(threshold))
+            {
+                MessageBox.Show("Введите корректное конечное число в поле порога.", "Ошибка ввода", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            ClearAnalysis();
+            try
+            {
+                _analysisResult = _analyzer.Analyze(signalList.Last(), threshold);
+                SummaryTextBlock.Text = $"Найдено пересечений: {_analysisResult.Markers.Count}";
+            }
+            catch (ArgumentException ex)
+            {
+                ClearAnalysis();
+                MessageBox.Show(ex.Message, "Ошибка анализа", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+
+            WpfPlot1.Refresh();
+        }
+
+        private void Button_Click_ClearMarkers(object sender, RoutedEventArgs e)
+        {
+            ClearAnalysis();
             WpfPlot1.Refresh();
         }
         public void addMarkers(OutOfRangeEventArgs obj, float frequency)
@@ -67,6 +129,7 @@ namespace SignalGenerator.App
         }
         public void Button_Clear(object sender, RoutedEventArgs e)
         {
+            ClearAnalysis();
             signalList.Clear();
             markup.Clear();
             markerList.Clear();
@@ -104,6 +167,7 @@ namespace SignalGenerator.App
         }
         public void Button_Click_Remove(object sender, RoutedEventArgs e)
         {
+            ClearAnalysis();
             if (signalList.Count == 0)
             {
                 MessageBox.Show("Нет сигналов для удаления");
@@ -250,6 +314,7 @@ namespace SignalGenerator.App
             }
             float upCut = (float.Parse(upCut_textBox.Text, CultureInfo.InvariantCulture));
             SingleChannelSignal sig = signalList.Last();
+            ClearAnalysis();
             WpfPlot1.Plot.Clear();
             WpfPlot1.Refresh();
             ThresholdCutter thre = new ThresholdCutter();
@@ -270,6 +335,7 @@ namespace SignalGenerator.App
             }
             float downCut = (float.Parse(downCut_textBox.Text, CultureInfo.InvariantCulture));
             SingleChannelSignal sig = signalList.Last();
+            ClearAnalysis();
             WpfPlot1.Plot.Clear();
             WpfPlot1.Refresh();
             ThresholdCutter thre = new ThresholdCutter();
@@ -287,6 +353,7 @@ namespace SignalGenerator.App
             float upCut = (float.Parse(upCut_textBox.Text, CultureInfo.InvariantCulture));
             float downCut = (float.Parse(downCut_textBox.Text, CultureInfo.InvariantCulture));
             SingleChannelSignal sig = signalList.Last();
+            ClearAnalysis();
             WpfPlot1.Plot.Clear();
             WpfPlot1.Refresh();
             ThresholdCutter thre = new ThresholdCutter();
@@ -309,6 +376,7 @@ namespace SignalGenerator.App
                 SingleChannelSignal lastSignal = signalList.Last();
                 SingleChannelSignal resampled = Resampler.Resample(lastSignal, newFreq);
 
+                ClearAnalysis();
                 clearMarkers();
                 WpfPlot1.Plot.Remove(WpfPlot1.Plot.PlottableList.Last());
                 signalList.RemoveAt(signalList.Count - 1);
