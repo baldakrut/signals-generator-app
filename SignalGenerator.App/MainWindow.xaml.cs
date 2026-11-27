@@ -27,8 +27,8 @@ namespace SignalGenerator.App
     /// </summary>
     public partial class MainWindow : Window
     {
-        public SignalChannelSignal sig;
-        public List<SignalChannelSignal> signalList = new List<SignalChannelSignal>();
+        public SingleChannelSignal sig;
+        public List<SingleChannelSignal> signalList = new List<SingleChannelSignal>();
         public List<OutOfRangeEventArgs> markup = new List<OutOfRangeEventArgs>();
         public List<VerticalLine> markerList = new List<VerticalLine>();
         public float markupFreq;
@@ -37,7 +37,7 @@ namespace SignalGenerator.App
             InitializeComponent();
             
         }
-        public void addSignal(SignalChannelSignal obj)
+        public void addSignal(SingleChannelSignal obj)
         {
 
             signalList.Add(obj);
@@ -104,7 +104,7 @@ namespace SignalGenerator.App
             if (saveFileDialog.ShowDialog() == true && signalList.Count() != 0)
             {
                 string filePath = saveFileDialog.FileName;
-                SignalChannelSignalWriter.Write(signalList.Last(), filePath);
+                SingleChannelSignalWriter.Write(signalList.Last(), filePath);
             }
 
 
@@ -118,7 +118,7 @@ namespace SignalGenerator.App
             if (myDialog.ShowDialog() == true)
             {
                 string filePath = myDialog.FileName;
-                addSignal(SignalChannelSignalLoader.Load(filePath));
+                addSignal(SingleChannelSignalReader.Read(filePath));
                 
             }
             
@@ -147,7 +147,7 @@ namespace SignalGenerator.App
         }
         public void Button_Click_Summ(object sender, RoutedEventArgs e)
         {
-            SignalChannelSignal sig_summ = Tools.Summ(signalList);
+            SingleChannelSignal sig_summ = Tools.Summ(signalList);
             string text = "Нет сигналов или частоты не совпадают";
             if(sig_summ == null)
             {
@@ -161,7 +161,7 @@ namespace SignalGenerator.App
         }
         public void Button_Click_Concat(object sender, RoutedEventArgs e)
         {
-            SignalChannelSignal sig_con = Tools.Concat(signalList);
+            SingleChannelSignal sig_con = Tools.Concat(signalList);
             string text = "Нет сигналов или частоты не совпадают";
             if (sig_con == null)
             {
@@ -188,7 +188,7 @@ namespace SignalGenerator.App
                 intWindowSize++;
             }
             float[] result = OfflineFilter.Filter(signalList.Last().Value, intWindowSize);
-            SignalChannelSignal newData = new SignalChannelSignal(signalList.Last().Freq, result);
+            SingleChannelSignal newData = new SingleChannelSignal(signalList.Last().Freq, result);
             addSignal(newData);
         }
 
@@ -213,7 +213,7 @@ namespace SignalGenerator.App
                 result.AddRange(filter.Filter(chunk));
             }
 
-            SignalChannelSignal newData = new SignalChannelSignal(signalList.Last().Freq, result.ToArray());
+            SingleChannelSignal newData = new SingleChannelSignal(signalList.Last().Freq, result.ToArray());
             addSignal(newData);
         }
         public void Button_Click_Analyze(object sender, RoutedEventArgs e)
@@ -226,7 +226,7 @@ namespace SignalGenerator.App
             float min = (float.Parse(min_textBox.Text, CultureInfo.InvariantCulture));
             float max = (float.Parse(max_textBox.Text, CultureInfo.InvariantCulture));
             float duration = (float.Parse(duration_textBox.Text, CultureInfo.InvariantCulture));
-            SignalChannelSignal sig = signalList.Last();
+            SingleChannelSignal sig = signalList.Last();
             int minLength = (int)(duration * sig.Freq + 0.5);
 
             clearMarkers();
@@ -281,7 +281,7 @@ namespace SignalGenerator.App
                 return;
             }
             float upCut = (float.Parse(upCut_textBox.Text, CultureInfo.InvariantCulture));
-            SignalChannelSignal sig = signalList.Last();
+            SingleChannelSignal sig = signalList.Last();
             WpfPlot1.Plot.Clear();
             WpfPlot1.Refresh();
             ThresholdCutter thre = new ThresholdCutter();
@@ -301,7 +301,7 @@ namespace SignalGenerator.App
                 return;
             }
             float downCut = (float.Parse(downCut_textBox.Text, CultureInfo.InvariantCulture));
-            SignalChannelSignal sig = signalList.Last();
+            SingleChannelSignal sig = signalList.Last();
             WpfPlot1.Plot.Clear();
             WpfPlot1.Refresh();
             ThresholdCutter thre = new ThresholdCutter();
@@ -318,7 +318,7 @@ namespace SignalGenerator.App
             }
             float upCut = (float.Parse(upCut_textBox.Text, CultureInfo.InvariantCulture));
             float downCut = (float.Parse(downCut_textBox.Text, CultureInfo.InvariantCulture));
-            SignalChannelSignal sig = signalList.Last();
+            SingleChannelSignal sig = signalList.Last();
             WpfPlot1.Plot.Clear();
             WpfPlot1.Refresh();
             ThresholdCutter thre = new ThresholdCutter();
