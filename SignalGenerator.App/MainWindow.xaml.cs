@@ -35,7 +35,9 @@ namespace SignalGenerator.App
         public MainWindow()
         {
             InitializeComponent();
-            
+
+            SignalTypeComboBox.ItemsSource = Enum.GetValues(typeof(SignalType));
+            SignalTypeComboBox.SelectedIndex = 0;
         }
         public void addSignal(SingleChannelSignal obj)
         {
@@ -62,30 +64,6 @@ namespace SignalGenerator.App
             }
             markerList.Clear();
             WpfPlot1.Refresh();
-        }
-
-
-        public void Button_Click_Sin(object sender, RoutedEventArgs e)
-        {
-            float len = (float.Parse(len_textBox.Text, CultureInfo.InvariantCulture));
-            float freq = (float.Parse(freq_textBox.Text, CultureInfo.InvariantCulture));
-            float period = (float.Parse(period_textBox.Text, CultureInfo.InvariantCulture));
-            float phase = (float.Parse(phase_textBox.Text, CultureInfo.InvariantCulture));
-            float scale = (float.Parse(scale_textBox.Text, CultureInfo.InvariantCulture));
-
-            addSignal(Tools.Sin(len, freq, period, phase, scale));
-            
-
-        }
-        public void Button_Click_Line(object sender, RoutedEventArgs e)
-        {
-            float k = (float.Parse(k_textBox.Text, CultureInfo.InvariantCulture));
-            float b = (float.Parse(b_textBox.Text, CultureInfo.InvariantCulture));
-            float len = (float.Parse(len_textBox.Text, CultureInfo.InvariantCulture));
-            float freq = (float.Parse(freq_textBox.Text, CultureInfo.InvariantCulture));
-            addSignal(Tools.Line(len,freq,k, b));
-
-
         }
         public void Button_Clear(object sender, RoutedEventArgs e)
         {
@@ -123,13 +101,6 @@ namespace SignalGenerator.App
             }
             
 
-        }
-        public void Button_Click_Noise(object sender, RoutedEventArgs e)
-        {
-            float amplitude = (float.Parse(Amplitude_textBox.Text, CultureInfo.InvariantCulture));
-            float len = (float.Parse(len_textBox.Text, CultureInfo.InvariantCulture));
-            float freq = (float.Parse(freq_textBox.Text, CultureInfo.InvariantCulture));
-            addSignal(Tools.Noise(len, freq, amplitude));
         }
         public void Button_Click_Remove(object sender, RoutedEventArgs e)
         {
@@ -347,6 +318,104 @@ namespace SignalGenerator.App
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Ошибка изменения частоты", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+        private void SignalTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!(SignalTypeComboBox.SelectedItem is SignalType type) || SinePanel == null)
+                return;
+
+            SinePanel.Visibility = Visibility.Collapsed;
+            LinePanel.Visibility = Visibility.Collapsed;
+            NoisePanel.Visibility = Visibility.Collapsed;
+
+            switch (type)
+            {
+                case SignalType.Sine:
+                    SinePanel.Visibility = Visibility.Visible;
+                    break;
+                case SignalType.Line:
+                    LinePanel.Visibility = Visibility.Visible;
+                    break;
+                case SignalType.Noise:
+                    NoisePanel.Visibility = Visibility.Visible;
+                    break;
+            }
+        }
+
+        private bool TryParseFloat(TextBox textBox, string fieldName, out float value)
+        {
+            string text = textBox.Text.Replace(',', '.');
+            if (!float.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value))
+            {
+                MessageBox.Show(
+                    $"Некорректное числовое значение в поле «{fieldName}».",
+                    "Ошибка ввода",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return false;
+            }
+
+            return true;
+        }
+
+        private GeneratorParameters ReadParameters(SignalType type)
+        {
+            switch (type)
+            {
+                case SignalType.Sine:
+                    if (!TryParseFloat(period_textBox, "Период", out float period) ||
+                        !TryParseFloat(phase_textBox, "Фаза", out float phase) ||
+                        !TryParseFloat(scale_textBox, "Амплитуда", out float amplitude))
+                        return null;
+
+                    return new SineParameters
+                    {
+                        Period = period,
+                        Phase = phase,
+                        Amplitude = amplitude
+                    };
+
+                case SignalType.Line:
+                    if (!TryParseFloat(k_textBox, "k", out float k) ||
+                        !TryParseFloat(b_textBox, "b", out float b))
+                        return null;
+
+                    return new LineParameters { K = k, B = b };
+
+                case SignalType.Noise:
+                    if (!TryParseFloat(range_textBox, "Размах", out float range))
+                        return null;
+
+                    return new NoiseParameters { Range = range };
+
+                default:
+                    return null;
+            }
+        }
+
+        private void Button_Click_Generate(object sender, RoutedEventArgs e)
+        {
+            if (!(SignalTypeComboBox.SelectedItem is SignalType selectedType))
+                return;
+
+            if (!TryParseFloat(freq_textBox, "Частота", out float samplingRate) ||
+                !TryParseFloat(len_textBox, "Длина", out float duration))
+                return;
+
+            GeneratorParameters parameters = ReadParameters(selectedType);
+            if (parameters == null)
+                return;
+
+            try
+            {
+                var generator = SignalGeneratorFactory.Create(parameters);
+                var signal = generator.Generate(new SamplingParameters(samplingRate, duration));
+                addSignal(signal);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ошибка генерации", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
     }
