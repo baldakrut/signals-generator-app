@@ -15,7 +15,8 @@
 
         <ScottPlot:WpfPlot x:Name="WpfPlot1" />
         <DockPanel Grid.Column="1" LastChildFill="False">
-            <StackPanel DockPanel.Dock="Top" Height="50" Orientation="Horizontal">
+            <!-- Общие параметры дискретизации -->
+            <StackPanel DockPanel.Dock="Top" Height="45" Orientation="Horizontal">
                 <Label Content="Длина(с)" VerticalAlignment="Top" Margin="10,10,0,0" Padding="0,0,0,0" />
                 <TextBox x:Name="len_textBox" TextWrapping="Wrap" VerticalAlignment="Top" Text="5" Margin="10,10,0,0"
                          Height="20" Width="50"/>
@@ -23,34 +24,35 @@
                 <TextBox x:Name="freq_textBox" TextWrapping="Wrap" VerticalAlignment="Top" Text="10" Margin="10,10,0,0"
                          Height="20" Width="50"/>
             </StackPanel>
-            <StackPanel DockPanel.Dock="Top" Height="47" Orientation="Horizontal">
-                <Button
-                    Content="Sin"
-                    HorizontalAlignment="Left"
-                    Width="50"
-                    Margin="10,10,0,0"
-                    VerticalAlignment="Top"
-                    Click="Button_Click_Sin"/>
-                <Label Content="Период(с)" VerticalAlignment="Top" Margin="10,10,0,0" Padding="0,0,0,0" />
-                <TextBox x:Name="period_textBox" TextWrapping="Wrap" VerticalAlignment="Top" Text="2" Margin="10,10,0,0"
-                         Height="20" Width="50"/>
-                <Label Content="Фаза(с)" VerticalAlignment="Top" Margin="10,10,0,0" Padding="0,0,0,0" />
-                <TextBox x:Name="phase_textBox" TextWrapping="Wrap" VerticalAlignment="Top" Text="10" Margin="10,10,0,0"
-                         Height="20" Width="50"/>
+
+            <!-- Выбор типа сигнала и кнопка генерации -->
+            <StackPanel DockPanel.Dock="Top" Height="45" Orientation="Horizontal">
+                <Label Content="Тип сигнала" VerticalAlignment="Top" Margin="10,10,0,0" Padding="0,0,0,0" />
+                <ComboBox x:Name="SignalTypeComboBox" Width="100" Height="22" Margin="10,8,0,0"
+                          VerticalAlignment="Top" SelectionChanged="SignalTypeComboBox_SelectionChanged"/>
+                <Button Content="Сгенерировать" Width="100" Height="22" Margin="10,8,0,0"
+                        VerticalAlignment="Top" Click="Button_Click_Generate"/>
             </StackPanel>
-            <StackPanel DockPanel.Dock="Top" Height="47" Orientation="Horizontal">
-                <Label Content="Коэффициент" VerticalAlignment="Top" Margin="70,10,0,0" Padding="0,0,0,0" />
-                <TextBox x:Name="scale_textBox" TextWrapping="Wrap" VerticalAlignment="Top" Text="1" Margin="10,10,0,0"
-                         Height="20" Width="50"/>
+
+            <!-- Панель параметров: Синусоида -->
+            <StackPanel x:Name="SinePanel" DockPanel.Dock="Top" Orientation="Vertical" Visibility="Visible">
+                <StackPanel Height="38" Orientation="Horizontal">
+                    <Label Content="Период(с)" VerticalAlignment="Top" Margin="10,8,0,0" Padding="0,0,0,0" />
+                    <TextBox x:Name="period_textBox" TextWrapping="Wrap" VerticalAlignment="Top" Text="2" Margin="10,8,0,0"
+                             Height="20" Width="50"/>
+                    <Label Content="Фаза(с)" VerticalAlignment="Top" Margin="10,8,0,0" Padding="0,0,0,0" />
+                    <TextBox x:Name="phase_textBox" TextWrapping="Wrap" VerticalAlignment="Top" Text="0" Margin="10,8,0,0"
+                             Height="20" Width="50"/>
+                </StackPanel>
+                <StackPanel Height="38" Orientation="Horizontal">
+                    <Label Content="Амплитуда" VerticalAlignment="Top" Margin="10,8,0,0" Padding="0,0,0,0" />
+                    <TextBox x:Name="scale_textBox" TextWrapping="Wrap" VerticalAlignment="Top" Text="1" Margin="10,8,0,0"
+                             Height="20" Width="50"/>
+                </StackPanel>
             </StackPanel>
-            <StackPanel DockPanel.Dock="Top" Height="47" Orientation="Horizontal">
-                <Button
-                    Content="Прямая"
-                    HorizontalAlignment="Left"
-                    Width="50"
-                    Margin="10,10,0,0"
-                    VerticalAlignment="Top"
-                    Click="Button_Click_Line"/>
+
+            <!-- Панель параметров: Прямая -->
+            <StackPanel x:Name="LinePanel" DockPanel.Dock="Top" Height="45" Orientation="Horizontal" Visibility="Collapsed">
                 <Label Content="k" VerticalAlignment="Top" Margin="10,10,0,0" Padding="0,0,0,0" />
                 <TextBox x:Name="k_textBox" TextWrapping="Wrap" VerticalAlignment="Top" Text="2" Margin="10,10,0,0"
                          Height="20" Width="50"/>
@@ -58,94 +60,46 @@
                 <TextBox x:Name="b_textBox" TextWrapping="Wrap" VerticalAlignment="Top" Text="-2" Margin="10,10,0,0"
                          Height="20" Width="50"/>
             </StackPanel>
+
+            <!-- Панель параметров: Белый шум -->
+            <StackPanel x:Name="NoisePanel" DockPanel.Dock="Top" Height="45" Orientation="Horizontal" Visibility="Collapsed">
+                <Label Content="Размах" VerticalAlignment="Top" Margin="10,10,0,0" Padding="0,0,0,0" />
+                <TextBox x:Name="range_textBox" TextWrapping="Wrap" VerticalAlignment="Top" Text="2" Margin="10,10,0,0"
+                         Height="20" Width="50"/>
+            </StackPanel>
+
+            <!-- Нижние панели управления (без изменений) -->
             <StackPanel DockPanel.Dock="Bottom" Height="50" Orientation="Horizontal">
-                <Button
-                    Content="Сброс"
-                    HorizontalAlignment="Left"
-                    Width="70"
-                    Margin="10,10,0,0"
-                    VerticalAlignment="Top"
-                    Click="Button_Clear"/>
-                <Button
-                    Content="Удалить"
-                    HorizontalAlignment="Left"
-                    Width="70"
-                    Margin="10,10,0,0"
-                    VerticalAlignment="Top"
-                    Click="Button_Click_Remove"/>
-                <Button
-                    Content="Загрузить"
-                    HorizontalAlignment="Left"
-                    Width="70"
-                    Margin="10,10,0,0"
-                    VerticalAlignment="Top"
-                    Click="Button_Load"/>
-                <Button
-                    Content="Сохранить"
-                    HorizontalAlignment="Left"
-                    Width="70"
-                    Margin="10,10,0,0"
-                    VerticalAlignment="Top"
-                    Click="Button_Write"/>
+                <Button Content="Сброс" HorizontalAlignment="Left" Width="70" Margin="10,10,0,0"
+                        VerticalAlignment="Top" Click="Button_Clear"/>
+                <Button Content="Удалить" HorizontalAlignment="Left" Width="70" Margin="10,10,0,0"
+                        VerticalAlignment="Top" Click="Button_Click_Remove"/>
+                <Button Content="Загрузить" HorizontalAlignment="Left" Width="70" Margin="10,10,0,0"
+                        VerticalAlignment="Top" Click="Button_Load"/>
+                <Button Content="Сохранить" HorizontalAlignment="Left" Width="70" Margin="10,10,0,0"
+                        VerticalAlignment="Top" Click="Button_Write"/>
             </StackPanel>
             <StackPanel DockPanel.Dock="Bottom" Height="50" Orientation="Horizontal">
-                <Button
-                    Content="Сумма"
-                    HorizontalAlignment="Left"
-                    Width="70"
-                    Margin="10,10,0,0"
-                    VerticalAlignment="Top"
-                    Click="Button_Click_Summ"/>
-                <Button
-                    Content="Склейка"
-                    HorizontalAlignment="Left"
-                    Width="70"
-                    Margin="10,10,0,0"
-                    VerticalAlignment="Top"
-                    Click="Button_Click_Concat"/>
+                <Button Content="Сумма" HorizontalAlignment="Left" Width="70" Margin="10,10,0,0"
+                        VerticalAlignment="Top" Click="Button_Click_Summ"/>
+                <Button Content="Склейка" HorizontalAlignment="Left" Width="70" Margin="10,10,0,0"
+                        VerticalAlignment="Top" Click="Button_Click_Concat"/>
             </StackPanel>
             <StackPanel DockPanel.Dock="Bottom" Height="45" Orientation="Horizontal">
                 <Label Content="Нов. част.(Гц)" VerticalAlignment="Top" Margin="10,10,0,0" Padding="0,0,0,0" />
                 <TextBox x:Name="newFreq_textBox" TextWrapping="Wrap" VerticalAlignment="Top" Text="100" Margin="10,10,0,0"
                          Height="20" Width="50"/>
-                <Button
-                    Content="Изменить частоту"
-                    HorizontalAlignment="Left"
-                    Width="120"
-                    Margin="10,10,0,0"
-                    VerticalAlignment="Top"
-                    Click="Button_Click_Resample"/>
-            </StackPanel>
-            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Height="50">
-                <Button
-                    Content="Шум"
-                    HorizontalAlignment="Left"
-                    Width="50"
-                    Margin="10,10,0,0"
-                    VerticalAlignment="Top"
-                    Click="Button_Click_Noise"/>
-                <Label Content="Амплитуда" VerticalAlignment="Top" Margin="10,10,0,0" Padding="0,0,0,0" />
-                <TextBox x:Name="Amplitude_textBox" TextWrapping="Wrap" VerticalAlignment="Top" Text="2" Margin="10,10,0,0"
-                         Height="20" Width="50"/>
+                <Button Content="Изменить частоту" HorizontalAlignment="Left" Width="120" Margin="10,10,0,0"
+                        VerticalAlignment="Top" Click="Button_Click_Resample"/>
             </StackPanel>
             <StackPanel DockPanel.Dock="Bottom" Height="50" Orientation="Horizontal">
-                <Button
-                    Content="Оф.фильтр"
-                    HorizontalAlignment="Right"
-                    Width="70"
-                    Margin="10,10,0,0"
-                    VerticalAlignment="Top"
-                    Click="Button_Click_Offline"/>
+                <Button Content="Оф.фильтр" HorizontalAlignment="Right" Width="70" Margin="10,10,0,0"
+                        VerticalAlignment="Top" Click="Button_Click_Offline"/>
                 <Label Content="Окно(с)" VerticalAlignment="Top" Margin="10,10,0,0" Padding="0,0,0,0" />
                 <TextBox x:Name="Window_textBox" TextWrapping="Wrap" VerticalAlignment="Top" Text="0.5" Margin="10,10,0,0"
                          Height="20" Width="50"/>
-                <Button
-                    Content="Он.фильтр"
-                    HorizontalAlignment="Left"
-                    Width="70"
-                    Margin="10,10,0,0"
-                    VerticalAlignment="Top"
-                    Click="Button_Click_Online"/>
+                <Button Content="Он.фильтр" HorizontalAlignment="Left" Width="70" Margin="10,10,0,0"
+                        VerticalAlignment="Top" Click="Button_Click_Online"/>
             </StackPanel>
             <StackPanel DockPanel.Dock="Bottom" Height="50" Orientation="Horizontal">
                 <Label Content="upCut" VerticalAlignment="Top" Margin="10,10,0,0" Padding="0,0,0,0" />
@@ -156,52 +110,22 @@
                          Height="20" Width="50"/>
             </StackPanel>
             <StackPanel DockPanel.Dock="Bottom" Height="50" Orientation="Horizontal">
-                <Button
-                    Content="CutUp"
-                    HorizontalAlignment="Right"
-                    Width="70"
-                    Margin="10,10,0,0"
-                    VerticalAlignment="Top"
-                    Click="Button_Click_CutUp"/>
-                <Button
-                    Content="CutDown"
-                    HorizontalAlignment="Right"
-                    Width="70"
-                    Margin="10,10,0,0"
-                    VerticalAlignment="Top"
-                    Click="Button_Click_CutDown"/>
+                <Button Content="CutUp" HorizontalAlignment="Right" Width="70" Margin="10,10,0,0"
+                        VerticalAlignment="Top" Click="Button_Click_CutUp"/>
+                <Button Content="CutDown" HorizontalAlignment="Right" Width="70" Margin="10,10,0,0"
+                        VerticalAlignment="Top" Click="Button_Click_CutDown"/>
             </StackPanel>
             <StackPanel DockPanel.Dock="Bottom" Height="50" Orientation="Horizontal">
-                <Button
-                    Content="CutUpAndDown"
-                    HorizontalAlignment="Right"
-                    Width="100"
-                    Margin="10,10,0,0"
-                    VerticalAlignment="Top"
-                    Click="Button_Click_CutUpAndDown"/>
+                <Button Content="CutUpAndDown" HorizontalAlignment="Right" Width="100" Margin="10,10,0,0"
+                        VerticalAlignment="Top" Click="Button_Click_CutUpAndDown"/>
             </StackPanel>
             <StackPanel DockPanel.Dock="Bottom" Height="50" Orientation="Horizontal">
-                <Button
-                    Content="Зашкалы"
-                    HorizontalAlignment="Left"
-                    Width="70"
-                    Margin="10,10,0,0"
-                    VerticalAlignment="Top"
-                    Click="Button_Click_Analyze"/>
-                <Button
-                    Content="Сохр.разм."
-                    HorizontalAlignment="Left"
-                    Width="70"
-                    Margin="10,10,0,0"
-                    VerticalAlignment="Top"
-                    Click="Button_Write_Markup"/>
-                <Button
-                    Content="Загр.разм."
-                    HorizontalAlignment="Left"
-                    Width="70"
-                    Margin="10,10,0,0"
-                    VerticalAlignment="Top"
-                    Click="Button_Load_Markup"/>
+                <Button Content="Зашкалы" HorizontalAlignment="Left" Width="70" Margin="10,10,0,0"
+                        VerticalAlignment="Top" Click="Button_Click_Analyze"/>
+                <Button Content="Сохр.разм." HorizontalAlignment="Left" Width="70" Margin="10,10,0,0"
+                        VerticalAlignment="Top" Click="Button_Write_Markup"/>
+                <Button Content="Загр.разм." HorizontalAlignment="Left" Width="70" Margin="10,10,0,0"
+                        VerticalAlignment="Top" Click="Button_Load_Markup"/>
             </StackPanel>
             <StackPanel DockPanel.Dock="Bottom" Height="50" Orientation="Horizontal">
                 <Label Content="Мин.:" VerticalAlignment="Top" Margin="10,10,0,0" Padding="0,0,0,0" />
